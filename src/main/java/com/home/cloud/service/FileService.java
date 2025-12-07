@@ -1,30 +1,30 @@
-package com.home.cloud;
+package com.home.cloud.service;
 
+import com.home.cloud.exception.FolderCreationException;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-@RestController
-@RequestMapping("api/files")
-public class Controller {
+@Service
+public class FileService {
+
     private final MinioClient minioClient;
     private final String bucketName = "localbucket";
 
-    public Controller(MinioClient minioClient) {
+    public FileService(MinioClient minioClient) {
         this.minioClient = minioClient;
     }
 
-    @PostMapping("/upload")
-    public ResponseEntity<String> uploadFile(@RequestParam("file")MultipartFile file) {
+    public ResponseEntity<String> upFile(MultipartFile file,String bucketName) {
         try {
             String fileName = file.getOriginalFilename();
             minioClient.putObject(
@@ -37,11 +37,10 @@ public class Controller {
             );
             return ResponseEntity.ok("File uploaded successfully: " + bucketName + "/" + fileName);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error; " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
 
-    @GetMapping("/list")
     public ResponseEntity<List<String>> listFiles() {
         try {
             List<String> filesNames = new ArrayList<>();
@@ -57,8 +56,7 @@ public class Controller {
         }
     }
 
-    @GetMapping("/download/{filename}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename) {
+    public ResponseEntity<InputStreamResource> downloadFile(String filename) {
         try {
             InputStream stream = minioClient.getObject(
                     GetObjectArgs.builder().bucket(bucketName).object(filename).build()
@@ -71,8 +69,7 @@ public class Controller {
         }
     }
 
-    @DeleteMapping("/delete/{filename}")
-    public ResponseEntity<String> deleteFile(@PathVariable String filename) {
+    public ResponseEntity<String> deleteFile(String filename) {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder().bucket(bucketName).object(filename).build()
@@ -82,4 +79,19 @@ public class Controller {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
         }
     }
+
+    public void createBucket(String name) {
+        try {
+            minioClient.makeBucket(
+                    MakeBucketArgs
+                            .builder()
+                            .bucket(name)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new FolderCreationException("I cannot create the bucket: " + bucketName, e);
+        }
+    }
+
+
 }
