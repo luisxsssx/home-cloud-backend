@@ -1,10 +1,11 @@
 package com.home.cloud.controller;
 
 import com.home.cloud.model.FolderModel;
+import com.home.cloud.service.BucketService;
 import com.home.cloud.service.FileService;
-import com.home.cloud.service.FolderService;
 import io.minio.*;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -16,46 +17,46 @@ import java.util.List;
 public class Controller {
 
     private final FileService fileService;
-    private final FolderService folderService;
+    private final BucketService bucketService;
 
-    public Controller(FileService fileService, FolderService folderService) {
+    public Controller(FileService fileService, BucketService bucketService) {
         this.fileService = fileService;
-        this.folderService = folderService;
+        this.bucketService = bucketService;
     }
 
     @PostMapping(value = "/upload")
     public ResponseEntity<String> uploadFile(
             @RequestPart("file") MultipartFile file,
-            @RequestParam("bucketName") String bucketName
+            @RequestParam("bucketName") String bucketName,
+            @RequestParam("folderName")FolderModel folderModel
     ) {
-        return fileService.upFile(file, bucketName);
+        fileService.upFile(file, bucketName, folderModel);
+        return ResponseEntity.ok("Files uploaded successfully");
     }
 
     @GetMapping("/list")
-    public ResponseEntity<List<String>> listFiles() {
-        return fileService.listFiles();
+    public ResponseEntity<List<String>> listFiles(@RequestParam String bucketName) {
+       List<String> files = fileService.listFiles(bucketName);
+        return ResponseEntity.ok(files);
     }
 
     @GetMapping("/download/{filename}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename) {
-        return fileService.downloadFile(filename);
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename, @RequestParam String bucketName) {
+        InputStreamResource resource = fileService.downloadFile(filename, bucketName);
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                .body(resource);
     }
 
     @DeleteMapping("/delete/{filename}")
-    public ResponseEntity<String> deleteFile(@PathVariable String filename) {
-        return fileService.deleteFile(filename);
+    public ResponseEntity<String> deleteFile(@PathVariable String filename, @RequestParam String bucketName) {
+        fileService.deleteFile(filename, bucketName);
+        return ResponseEntity.ok("File successfully deleted" + filename);
     }
 
     @PostMapping("/create/bucket")
     public ResponseEntity<String> createBucket(@PathVariable String bucketName) {
-        fileService.createBucket(bucketName);
+        bucketService.createBucket(bucketName);
         return ResponseEntity.ok("Bucket created successfully: " + bucketName);
-    }
-
-    // Make folder
-    @PostMapping("/create/folder")
-    public ResponseEntity<String> makeFolder(@RequestBody FolderModel folderModel) {
-        folderService.makeFolder(folderModel);
-        return ResponseEntity.ok("Folder created successfully: " + folderModel);
     }
 }

@@ -1,12 +1,10 @@
 package com.home.cloud.service;
 
-import com.home.cloud.exception.FolderCreationException;
+import com.home.cloud.exception.FileException;
+import com.home.cloud.model.FolderModel;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -18,30 +16,28 @@ import java.util.List;
 public class FileService {
 
     private final MinioClient minioClient;
-    private final String bucketName = "localbucket";
 
     public FileService(MinioClient minioClient) {
         this.minioClient = minioClient;
     }
 
-    public ResponseEntity<String> upFile(MultipartFile file,String bucketName) {
+    public void upFile(MultipartFile file, String bucketName, FolderModel folderModel) {
         try {
             String fileName = file.getOriginalFilename();
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
-                            .object(fileName)
+                            .object(folderModel.getFolderName() + file)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build()
             );
-            return ResponseEntity.ok("File uploaded successfully: " + bucketName + "/" + fileName);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+            throw new FileException("I cannot upload file", e);
         }
     }
 
-    public ResponseEntity<List<String>> listFiles() {
+    public List<String> listFiles(String bucketName) {
         try {
             List<String> filesNames = new ArrayList<>();
             Iterable<Result<Item>> items = minioClient.listObjects(
@@ -50,48 +46,33 @@ public class FileService {
             for (Result<Item> item : items) {
                 filesNames.add(item.get().objectName());
             }
-            return ResponseEntity.ok(filesNames);
+            return filesNames;
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            throw new FileException("List" + bucketName, e);
         }
     }
 
-    public ResponseEntity<InputStreamResource> downloadFile(String filename) {
+    public InputStreamResource downloadFile(String filename, String bucketName) {
         try {
             InputStream stream = minioClient.getObject(
-                    GetObjectArgs.builder().bucket(bucketName).object(filename).build()
+                    GetObjectArgs.builder()
+                            .bucket(bucketName)
+                            .object(filename)
+                            .build()
             );
-            return ResponseEntity.ok()
-                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .body(new InputStreamResource(stream));
+           return new InputStreamResource(stream);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            throw new FileException("Download successfully", e);
         }
     }
 
-    public ResponseEntity<String> deleteFile(String filename) {
+    public void deleteFile(String filename, String bucketName) {
         try {
             minioClient.removeObject(
                     RemoveObjectArgs.builder().bucket(bucketName).object(filename).build()
             );
-            return ResponseEntity.ok("File deleted successfully: " + filename);
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error: " + e.getMessage());
+            throw new FileException("File deleted successfully", e);
         }
     }
-
-    public void createBucket(String name) {
-        try {
-            minioClient.makeBucket(
-                    MakeBucketArgs
-                            .builder()
-                            .bucket(name)
-                            .build()
-            );
-        } catch (Exception e) {
-            throw new FolderCreationException("I cannot create the bucket: " + bucketName, e);
-        }
-    }
-
-
 }

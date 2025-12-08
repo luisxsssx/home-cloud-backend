@@ -8,6 +8,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class FolderModel {
-    private String bucketName;
     private String folderName;
 }

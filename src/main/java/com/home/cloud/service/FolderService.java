@@ -1,7 +1,6 @@
 package com.home.cloud.service;
 
-import com.home.cloud.exception.FolderCreationException;
-import com.home.cloud.model.BucketModel;
+import com.home.cloud.exception.folder.FolderException;
 import com.home.cloud.model.FolderModel;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
@@ -18,19 +17,19 @@ public class FolderService {
     }
 
     // Make folder
-    public void makeFolder(FolderModel folderModel) {
+    public void makeFolder(String bucketName, FolderModel folderModel) {
         var emptyStream = new ByteArrayInputStream(new byte[] {});
 
         try {
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(folderModel.getBucketName())
-                            .object(folderModel.getFolderName().endsWith("/") ? folderModel.getFolderName() : folderModel.getFolderName() + "/")
+                            .bucket(bucketName)
                             .stream(emptyStream, 0, -1)
+                            .object(folderModel.getFolderName().endsWith("/") ? folderModel.getFolderName() : folderModel.getFolderName() + "/")
                             .build()
             );
         } catch (Exception e) {
-            throw new FolderCreationException("I cannot create the folder: " + folderModel.getFolderName(), e);
+            throw new FolderException("I cannot create the folder: " + folderModel.getFolderName(), e);
         }
     }
 }
