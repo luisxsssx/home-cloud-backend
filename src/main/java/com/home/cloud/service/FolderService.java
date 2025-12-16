@@ -11,14 +11,20 @@ import java.io.ByteArrayInputStream;
 @Service
 public class FolderService {
     private final MinioClient minioClient;
+    private final BucketService bucketService;
 
-    public FolderService(MinioClient minioClient) {
+    public FolderService(MinioClient minioClient, BucketService bucketService) {
         this.minioClient = minioClient;
+        this.bucketService = bucketService;
     }
 
     // Make folder
     public void makeFolder(String bucketName, FolderModel folderModel) {
         var emptyStream = new ByteArrayInputStream(new byte[] {});
+
+        if (!bucketService.isBucketExists(bucketName)) {
+            throw new IllegalArgumentException("Bucket not found: " + bucketName);
+        }
 
         try {
             minioClient.putObject(

@@ -14,12 +14,12 @@ import java.util.List;
 
 @RestController
 @RequestMapping("api/files")
-public class Controller {
+public class FileController {
 
     private final FileService fileService;
     private final BucketService bucketService;
 
-    public Controller(FileService fileService, BucketService bucketService) {
+    public FileController(FileService fileService, BucketService bucketService) {
         this.fileService = fileService;
         this.bucketService = bucketService;
     }
@@ -52,11 +52,5 @@ public class Controller {
     public ResponseEntity<String> deleteFile(@PathVariable String filename, @RequestParam String bucketName) {
         fileService.deleteFile(filename, bucketName);
         return ResponseEntity.ok("File successfully deleted" + filename);
-    }
-
-    @PostMapping("/create/bucket")
-    public ResponseEntity<String> createBucket(@PathVariable String bucketName) {
-        bucketService.createBucket(bucketName);
-        return ResponseEntity.ok("Bucket created successfully: " + bucketName);
     }
 }
