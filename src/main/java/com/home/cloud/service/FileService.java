@@ -21,17 +21,27 @@ public class FileService {
         this.minioClient = minioClient;
     }
 
-    public void upFile(MultipartFile file, String bucketName, FolderModel folderModel) {
+    public String upFile(MultipartFile file, String bucketName, FolderModel folderModel) {
         try {
             String fileName = file.getOriginalFilename();
+
+            String objectName;
+
+            if(folderModel != null && folderModel.getFolderName() != null) {
+                objectName = folderModel.getFolderName() + "/" + fileName;
+            } else {
+                objectName = fileName;
+            }
+
             minioClient.putObject(
                     PutObjectArgs.builder()
                             .bucket(bucketName)
-                            .object(folderModel.getFolderName() + file)
+                            .object(objectName)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build()
             );
+            return bucketName + "/" + objectName;
         } catch (Exception e) {
             throw new FileException("I cannot upload file", e);
         }

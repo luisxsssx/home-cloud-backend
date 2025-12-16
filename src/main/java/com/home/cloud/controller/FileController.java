@@ -28,10 +28,10 @@ public class FileController {
     public ResponseEntity<String> uploadFile(
             @RequestPart("file") MultipartFile file,
             @RequestParam("bucketName") String bucketName,
-            @RequestParam("folderName")FolderModel folderModel
+            @RequestParam(value = "folderName", required = false)FolderModel folderModel
     ) {
-        fileService.upFile(file, bucketName, folderModel);
-        return ResponseEntity.ok("Files uploaded successfully");
+       String objectKey = fileService.upFile(file, bucketName, folderModel);
+        return ResponseEntity.ok(objectKey);
     }
 
     @GetMapping("/list")
