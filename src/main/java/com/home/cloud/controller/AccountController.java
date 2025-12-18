@@ -34,4 +34,5 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
+
 }

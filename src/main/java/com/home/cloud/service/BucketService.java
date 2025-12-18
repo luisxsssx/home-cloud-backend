@@ -2,10 +2,10 @@ package com.home.cloud.service;
 
 import com.home.cloud.exception.BucketCreationException;
 import com.home.cloud.exception.BucketNotFoundException;
-import com.home.cloud.model.BucketModel;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
+import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -17,22 +17,21 @@ public class BucketService {
         this.minioClient = minioClient;
     }
 
-    public void createBucket(BucketModel bucketModel) {
-        if (!isBucketNameValid(bucketModel.getBucketName())) {
-            throw new IllegalArgumentException("Invalid bucket name: " + bucketModel.getBucketName());
+    public void createBucket(@MonotonicNonNull String bucketName) {
+        if (!isBucketNameValid(bucketName)) {
+            throw new IllegalArgumentException("Invalid bucket name: " + bucketName);
         }
         try {
             minioClient.makeBucket(
                     MakeBucketArgs
                             .builder()
-                            .bucket(bucketModel.getBucketName())
+                            .bucket(bucketName)
                             .build()
             );
         } catch (Exception e) {
             throw new BucketCreationException("I cannot create the bucket", e);
         }
     }
-
     private boolean isBucketNameValid(String bucketName) {
         return bucketName.length() >= 3 && bucketName.length() <= 63 &&
                 bucketName.matches("^[a-z0-9.-]+$") &&
