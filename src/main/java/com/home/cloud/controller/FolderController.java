@@ -1,8 +1,7 @@
 package com.home.cloud.controller;
 
 import com.home.cloud.model.AccountBucket;
-import com.home.cloud.model.BucketModel;
-import com.home.cloud.model.FolderModel;
+import com.home.cloud.model.AccountFolder;
 import com.home.cloud.service.AccountService;
 import com.home.cloud.service.BucketService;
 import com.home.cloud.service.FolderService;
@@ -32,8 +31,9 @@ public class FolderController {
 
     // Make folder
     @PostMapping("/{bucketName}/create/folder")
-    public ResponseEntity<String> makeFolder(@PathVariable String bucketName, @RequestBody FolderModel folderModel) {
-        folderService.makeFolder(bucketName, folderModel);
-        return ResponseEntity.ok("Folder created successfully: " + folderModel.getFolderName());
+    public ResponseEntity<String> makeFolder(@PathVariable String bucketName, @RequestBody AccountFolder accountFolder) {
+        folderService.makeFolder(bucketName, accountFolder.getFolder_name());
+        accountService.saveBucketFolder(bucketName, accountFolder.getAccount_id(), accountFolder.getBucket_id());
+        return ResponseEntity.ok("Folder created successfully: " + accountFolder.getFolder_name());
     }
 }

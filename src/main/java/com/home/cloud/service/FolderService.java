@@ -19,7 +19,7 @@ public class FolderService {
     }
 
     // Make folder
-    public void makeFolder(String bucketName, FolderModel folderModel) {
+    public void makeFolder(String bucketName, String folder_name) {
         var emptyStream = new ByteArrayInputStream(new byte[] {});
 
         if (!bucketService.isBucketExists(bucketName)) {
@@ -31,11 +31,11 @@ public class FolderService {
                     PutObjectArgs.builder()
                             .bucket(bucketName)
                             .stream(emptyStream, 0, -1)
-                            .object(folderModel.getFolderName().endsWith("/") ? folderModel.getFolderName() : folderModel.getFolderName() + "/")
+                            .object(folder_name.endsWith("/") ? folder_name : folder_name + "/")
                             .build()
             );
         } catch (Exception e) {
-            throw new FolderException("I cannot create the folder: " + folderModel.getFolderName(), e);
+            throw new FolderException("I cannot create the folder: " + folder_name, e);
         }
     }
 }
