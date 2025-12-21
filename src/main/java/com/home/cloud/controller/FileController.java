@@ -1,6 +1,10 @@
 package com.home.cloud.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.home.cloud.model.AccountBucket;
+import com.home.cloud.model.FileModel;
 import com.home.cloud.model.FolderModel;
+import com.home.cloud.service.AccountService;
 import com.home.cloud.service.BucketService;
 import com.home.cloud.service.FileService;
 import io.minio.*;
@@ -10,6 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.util.List;
 
 @RestController
@@ -18,21 +23,24 @@ public class FileController {
 
     private final FileService fileService;
     private final BucketService bucketService;
+    private final AccountService accountService;
 
-    public FileController(FileService fileService, BucketService bucketService) {
+    public FileController(FileService fileService, BucketService bucketService, AccountService accountService) {
         this.fileService = fileService;
         this.bucketService = bucketService;
+        this.accountService = accountService;
     }
 
-    @PostMapping(value = "/upload")
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> uploadFile(
             @RequestPart("file") MultipartFile file,
-            @RequestParam("bucketName") String bucketName,
-            @RequestParam(value = "folderName", required = false)FolderModel folderModel
-    ) {
-       String objectKey = fileService.upFile(file, bucketName, folderModel);
+            @RequestPart("data") FileModel fileModel
+    ) throws Exception {
+        String objectKey = fileService.upFile(file, fileModel.getBucket_name(), fileModel.getFolder_name(), fileModel.getAccount_id(), fileModel.getBucket_id());
         return ResponseEntity.ok(objectKey);
     }
+
+
 
     @GetMapping("/list")
     public ResponseEntity<List<String>> listFiles(@RequestParam String bucketName) {

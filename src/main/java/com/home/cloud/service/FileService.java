@@ -4,16 +4,23 @@ import com.home.cloud.exception.FileException;
 import com.home.cloud.model.FolderModel;
 import io.minio.*;
 import io.minio.messages.Item;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.sql.CallableStatement;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class FileService {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private final MinioClient minioClient;
 
@@ -21,27 +28,44 @@ public class FileService {
         this.minioClient = minioClient;
     }
 
-    public String upFile(MultipartFile file, String bucketName, FolderModel folderModel) {
+    public String upFile(
+            MultipartFile file,
+            String bucket_name,
+            String folder_name,
+            Integer account_id,
+            Integer bucket_id) {
         try {
-            String fileName = file.getOriginalFilename();
 
+            String file_name = file.getOriginalFilename();
+            jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?)");
+
+                cs.setString(1, folder_name);
+                cs.setString(2, file_name);
+                cs.setInt(3, account_id);
+                cs.setInt(4, bucket_id);
+                cs.execute();
+                return null;
+            } );
+
+            String fileName = file.getOriginalFilename();
             String objectName;
 
-            if(folderModel != null && folderModel.getFolderName() != null) {
-                objectName = folderModel.getFolderName() + "/" + fileName;
+            if(folder_name != null && folder_name != null) {
+                objectName = folder_name + "/" + fileName;
             } else {
                 objectName = fileName;
             }
 
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(bucketName)
+                            .bucket(bucket_name)
                             .object(objectName)
                             .stream(file.getInputStream(), file.getSize(), -1)
                             .contentType(file.getContentType())
                             .build()
             );
-            return bucketName + "/" + objectName;
+            return bucket_name + "/" + objectName;
         } catch (Exception e) {
             throw new FileException("I cannot upload file", e);
         }

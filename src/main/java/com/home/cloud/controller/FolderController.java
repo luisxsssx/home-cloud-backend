@@ -33,7 +33,7 @@ public class FolderController {
     @PostMapping("/{bucketName}/create/folder")
     public ResponseEntity<String> makeFolder(@PathVariable String bucketName, @RequestBody AccountFolder accountFolder) {
         folderService.makeFolder(bucketName, accountFolder.getFolder_name());
-        accountService.saveBucketFolder(bucketName, accountFolder.getAccount_id(), accountFolder.getBucket_id());
+        accountService.saveBucketFolder(accountFolder.getFolder_name(), accountFolder.getAccount_id(), accountFolder.getBucket_id());
         return ResponseEntity.ok("Folder created successfully: " + accountFolder.getFolder_name());
     }
 }

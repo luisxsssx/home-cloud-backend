@@ -51,4 +51,15 @@ public class AccountService {
         });
     }
 
+    public void saveAccountFile(String folder_name, Integer account_id, Integer bucket_id) {
+        jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+            CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?)");
+
+            cs.setString(1, folder_name);
+            cs.setInt(2, account_id);
+            cs.setInt(3, bucket_id);
+            cs.execute();
+            return null;
+        } );
+    }
 }
