@@ -5,11 +5,18 @@ import com.home.cloud.exception.BucketNotFoundException;
 import io.minio.BucketExistsArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
-import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.ConnectionCallback;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
+
+import java.sql.CallableStatement;
 
 @Service
 public class BucketService {
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
 
     private final MinioClient minioClient;
 
@@ -17,11 +24,19 @@ public class BucketService {
         this.minioClient = minioClient;
     }
 
-    public void createBucket(@MonotonicNonNull String bucketName) {
+    public void createBucket(String bucketName, Integer account_id) {
         if (!isBucketNameValid(bucketName)) {
             throw new IllegalArgumentException("Invalid bucket name: " + bucketName);
         }
         try {
+            jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                CallableStatement cs = connection.prepareCall("call sp_account_bucket(?,?)");
+
+                cs.setString(1, bucketName);
+                cs.setInt(2, account_id);
+                cs.execute();
+                return null;
+            });
             minioClient.makeBucket(
                     MakeBucketArgs
                             .builder()

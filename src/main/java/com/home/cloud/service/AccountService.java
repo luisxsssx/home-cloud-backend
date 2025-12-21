@@ -1,6 +1,5 @@
 package com.home.cloud.service;
 
-import com.home.cloud.model.AccountBucket;
 import com.home.cloud.model.AccountModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
@@ -26,40 +25,5 @@ public class AccountService {
             cs.execute();
             return null;
         });
-    }
-
-    public void saveBucketAccount(AccountBucket accountBucket) {
-        jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-            CallableStatement cs = connection.prepareCall("call sp_account_bucket(?,?)");
-
-            cs.setString(1, accountBucket.getBucket_name());
-            cs.setInt(2, accountBucket.getAccount_id());
-            cs.execute();
-            return null;
-        });
-    }
-
-    public void saveBucketFolder(String folder_name, Integer account_id, Integer bucket_id) {
-        jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-            CallableStatement cs = connection.prepareCall("call sp_account_folder(?,?,?)");
-
-            cs.setString(1, folder_name);
-            cs.setInt(2, account_id);
-            cs.setInt(3, bucket_id);
-            cs.execute();
-            return null;
-        });
-    }
-
-    public void saveAccountFile(String folder_name, Integer account_id, Integer bucket_id) {
-        jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-            CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?)");
-
-            cs.setString(1, folder_name);
-            cs.setInt(2, account_id);
-            cs.setInt(3, bucket_id);
-            cs.execute();
-            return null;
-        } );
     }
 }

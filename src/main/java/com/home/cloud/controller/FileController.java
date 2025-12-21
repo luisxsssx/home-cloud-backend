@@ -1,9 +1,6 @@
 package com.home.cloud.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.home.cloud.model.AccountBucket;
 import com.home.cloud.model.FileModel;
-import com.home.cloud.model.FolderModel;
 import com.home.cloud.service.AccountService;
 import com.home.cloud.service.BucketService;
 import com.home.cloud.service.FileService;
@@ -18,17 +15,13 @@ import java.io.File;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/files")
+@RequestMapping("cloud/files")
 public class FileController {
 
     private final FileService fileService;
-    private final BucketService bucketService;
-    private final AccountService accountService;
 
-    public FileController(FileService fileService, BucketService bucketService, AccountService accountService) {
+    public FileController(FileService fileService) {
         this.fileService = fileService;
-        this.bucketService = bucketService;
-        this.accountService = accountService;
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -40,11 +33,10 @@ public class FileController {
         return ResponseEntity.ok(objectKey);
     }
 
-
-
     @GetMapping("/list")
-    public ResponseEntity<List<String>> listFiles(@RequestParam String bucketName) {
-       List<String> files = fileService.listFiles(bucketName);
+    public ResponseEntity<List<String>> listFiles(@RequestParam String bucket_name,
+                                                  @RequestParam(required = false) String folder_name) {
+       List<String> files = fileService.listFiles(bucket_name, folder_name);
         return ResponseEntity.ok(files);
     }
 

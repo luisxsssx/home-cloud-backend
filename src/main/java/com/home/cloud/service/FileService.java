@@ -1,7 +1,6 @@
 package com.home.cloud.service;
 
 import com.home.cloud.exception.FileException;
-import com.home.cloud.model.FolderModel;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +27,7 @@ public class FileService {
         this.minioClient = minioClient;
     }
 
+    // Save the file data to the database and upload the file to Minio
     public String upFile(
             MultipartFile file,
             String bucket_name,
@@ -35,7 +35,6 @@ public class FileService {
             Integer account_id,
             Integer bucket_id) {
         try {
-
             String file_name = file.getOriginalFilename();
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?)");
@@ -71,18 +70,21 @@ public class FileService {
         }
     }
 
-    public List<String> listFiles(String bucketName) {
+    public List<String> listFiles(String bucket_name, String folder_name) {
         try {
             List<String> filesNames = new ArrayList<>();
             Iterable<Result<Item>> items = minioClient.listObjects(
-                    ListObjectsArgs.builder().bucket(bucketName).build()
-            );
+                    ListObjectsArgs.builder()
+                            .bucket(bucket_name)
+                            .prefix(folder_name)
+                            .recursive(true)
+                            .build());
             for (Result<Item> item : items) {
                 filesNames.add(item.get().objectName());
             }
             return filesNames;
         } catch (Exception e) {
-            throw new FileException("List" + bucketName, e);
+            throw new FileException("List" + bucket_name, e);
         }
     }
 
