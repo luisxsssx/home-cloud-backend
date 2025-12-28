@@ -33,4 +33,10 @@ public class FolderController {
         folderService.makeFolder(bucketName, accountFolder.getFolder_name(), accountFolder.getAccount_id(), accountFolder.getBucket_id());
         return ResponseEntity.ok("Folder created successfully: " + accountFolder.getFolder_name());
     }
+
+    @DeleteMapping("/{bucket_name}")
+    public ResponseEntity<String> deleteFolder(@PathVariable("bucket_name") String bucket_name, @RequestParam String folder_name) {
+        folderService.deleteFolder(bucket_name, folder_name);
+        return ResponseEntity.ok("Folder deleted successfully: " + folder_name);
+    }
 }

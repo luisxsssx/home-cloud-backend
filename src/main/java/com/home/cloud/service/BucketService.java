@@ -24,15 +24,16 @@ public class BucketService {
         this.minioClient = minioClient;
     }
 
-    public void createBucket(String bucketName, Integer account_id) {
-        if (!isBucketNameValid(bucketName)) {
-            throw new IllegalArgumentException("Invalid bucket name: " + bucketName);
+
+    public void createBucket(String bucket_name, Integer account_id) {
+        if (!isBucketNameValid(bucket_name)) {
+            throw new IllegalArgumentException("Invalid bucket name: " + bucket_name);
         }
         try {
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_account_bucket(?,?)");
 
-                cs.setString(1, bucketName);
+                cs.setString(1, bucket_name);
                 cs.setInt(2, account_id);
                 cs.execute();
                 return null;
@@ -40,7 +41,7 @@ public class BucketService {
             minioClient.makeBucket(
                     MakeBucketArgs
                             .builder()
-                            .bucket(bucketName)
+                            .bucket(bucket_name)
                             .build()
             );
         } catch (Exception e) {

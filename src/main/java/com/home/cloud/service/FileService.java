@@ -1,5 +1,6 @@
 package com.home.cloud.service;
 
+import com.home.cloud.exception.FileEliminationException;
 import com.home.cloud.exception.FileException;
 import io.minio.*;
 import io.minio.messages.Item;
@@ -99,6 +100,33 @@ public class FileService {
            return new InputStreamResource(stream);
         } catch (Exception e) {
             throw new FileException("Download successfully", e);
+        }
+    }
+
+    public void renameFile(String bucket_name, String new_file_name, String old_file_name) {
+        try {
+            minioClient.copyObject(
+                    CopyObjectArgs
+                            .builder()
+                            .bucket(bucket_name)
+                            .object(new_file_name)
+                            .source(
+                                    CopySource.builder()
+                                            .bucket(bucket_name)
+                                            .object(old_file_name)
+                                            .build()
+                            )
+                            .build()
+            );
+
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder()
+                            .bucket(bucket_name)
+                            .object(old_file_name)
+                            .build()
+            );
+        } catch (Exception e) {
+            throw new FileEliminationException("File removed successfully", e);
         }
     }
 

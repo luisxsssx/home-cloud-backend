@@ -1,8 +1,7 @@
 package com.home.cloud.controller;
 
 import com.home.cloud.model.FileModel;
-import com.home.cloud.service.AccountService;
-import com.home.cloud.service.BucketService;
+import com.home.cloud.model.FileRenameModel;
 import com.home.cloud.service.FileService;
 import io.minio.*;
 import org.springframework.core.io.InputStreamResource;
@@ -11,7 +10,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
 import java.util.List;
 
 @RestController
@@ -48,9 +46,16 @@ public class FileController {
                 .body(resource);
     }
 
-    @DeleteMapping("/delete/{filename}")
-    public ResponseEntity<String> deleteFile(@PathVariable String filename, @RequestParam String bucketName) {
-        fileService.deleteFile(filename, bucketName);
-        return ResponseEntity.ok("File successfully deleted" + filename);
+    @PostMapping("/rename")
+    public ResponseEntity<String> renameFile(@RequestBody FileRenameModel fileRenameModel) {
+        fileService.renameFile(fileRenameModel.getBucket_name(), fileRenameModel.getNew_file_name(), fileRenameModel.getOld_file_name());
+        return ResponseEntity.ok("File renamed successfully");
+    }
+
+    @DeleteMapping("/delete/{file_name}")
+    public ResponseEntity<String> deleteFile(@PathVariable("file_name") String file_name,
+                                             @RequestParam String bucket_name) {
+        fileService.deleteFile(file_name, bucket_name);
+        return ResponseEntity.ok("File successfully deleted" + file_name);
     }
 }
