@@ -1,5 +1,6 @@
 package com.home.cloud.controller;
 
+import com.home.cloud.model.DeleteFileModel;
 import com.home.cloud.model.FileModel;
 import com.home.cloud.model.FileRenameModel;
 import com.home.cloud.service.FileService;
@@ -27,7 +28,10 @@ public class FileController {
             @RequestPart("file") MultipartFile file,
             @RequestPart("data") FileModel fileModel
     ) throws Exception {
-        String objectKey = fileService.upFile(file, fileModel.getBucket_name(), fileModel.getFolder_name(), fileModel.getAccount_id(), fileModel.getBucket_id());
+        String objectKey = fileService.upFile(file, fileModel.getBucket_name(),
+                fileModel.getFolder_name(),
+                fileModel.getAccount_id(),
+                fileModel.getBucket_id());
         return ResponseEntity.ok(objectKey);
     }
 
@@ -39,7 +43,8 @@ public class FileController {
     }
 
     @GetMapping("/download/{filename}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename, @RequestParam String bucketName) {
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename,
+                                                            @RequestParam String bucketName) {
         InputStreamResource resource = fileService.downloadFile(filename, bucketName);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
@@ -48,14 +53,15 @@ public class FileController {
 
     @PostMapping("/rename")
     public ResponseEntity<String> renameFile(@RequestBody FileRenameModel fileRenameModel) {
-        fileService.renameFile(fileRenameModel.getBucket_name(), fileRenameModel.getNew_file_name(), fileRenameModel.getOld_file_name());
+        fileService.renameFile(fileRenameModel.getBucket_name(),
+                fileRenameModel.getNew_file_name(),
+                fileRenameModel.getOld_file_name());
         return ResponseEntity.ok("File renamed successfully");
     }
 
-    @DeleteMapping("/delete/{file_name}")
-    public ResponseEntity<String> deleteFile(@PathVariable("file_name") String file_name,
-                                             @RequestParam String bucket_name) {
-        fileService.deleteFile(file_name, bucket_name);
-        return ResponseEntity.ok("File successfully deleted" + file_name);
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteFile(@RequestBody DeleteFileModel deleteFileModel) {
+        fileService.deleteFile(deleteFileModel.getFile_id(), deleteFileModel.getFile_name(), deleteFileModel.getBucket_name());
+        return ResponseEntity.ok("File successfully deleted" + " " + deleteFileModel.getFile_name());
     }
 }

@@ -58,8 +58,15 @@ public class FolderService {
         }
     }
 
-    public void deleteFolder(String bucket_name, String folder_name) {
+    public void deleteFolder(Integer folder_id, String bucket_name, String folder_name) {
         try {
+            jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                CallableStatement cs = connection.prepareCall("call sp_delete_folder(?)");
+                cs.setInt(1, folder_id);
+                cs.execute();
+                return null;
+            } );
+
             List<String> result = new ArrayList<>();
             Iterable<Result<Item>> items = minioClient.listObjects(
                     ListObjectsArgs.builder()

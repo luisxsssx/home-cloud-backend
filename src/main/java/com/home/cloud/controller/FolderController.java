@@ -2,6 +2,7 @@ package com.home.cloud.controller;
 
 import com.home.cloud.model.AccountBucket;
 import com.home.cloud.model.AccountFolder;
+import com.home.cloud.model.DeleteFolderModel;
 import com.home.cloud.service.BucketService;
 import com.home.cloud.service.FolderService;
 import org.springframework.http.ResponseEntity;
@@ -30,13 +31,15 @@ public class FolderController {
     @PostMapping("/{bucketName}/create/folder")
     public ResponseEntity<String> makeFolder(@PathVariable String bucketName,
                                              @RequestBody AccountFolder accountFolder) {
-        folderService.makeFolder(bucketName, accountFolder.getFolder_name(), accountFolder.getAccount_id(), accountFolder.getBucket_id());
+        folderService.makeFolder(bucketName, accountFolder.getFolder_name(),
+                accountFolder.getAccount_id(), accountFolder.getBucket_id());
         return ResponseEntity.ok("Folder created successfully: " + accountFolder.getFolder_name());
     }
 
-    @DeleteMapping("/{bucket_name}")
-    public ResponseEntity<String> deleteFolder(@PathVariable("bucket_name") String bucket_name, @RequestParam String folder_name) {
-        folderService.deleteFolder(bucket_name, folder_name);
-        return ResponseEntity.ok("Folder deleted successfully: " + folder_name);
+    @DeleteMapping("/delete")
+    public ResponseEntity<String> deleteFolder(@RequestBody DeleteFolderModel deleteFolderModel) {
+        folderService.deleteFolder(deleteFolderModel.getFolder_id(),
+                deleteFolderModel.getBucket_name(), deleteFolderModel.getFolder_name());
+        return ResponseEntity.ok("Folder deleted successfully: " + " " + deleteFolderModel.getFolder_name());
     }
 }

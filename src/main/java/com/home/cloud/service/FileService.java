@@ -51,7 +51,7 @@ public class FileService {
             String fileName = file.getOriginalFilename();
             String objectName;
 
-            if(folder_name != null && folder_name != null) {
+            if(folder_name != null) {
                 objectName = folder_name + "/" + fileName;
             } else {
                 objectName = fileName;
@@ -130,10 +130,17 @@ public class FileService {
         }
     }
 
-    public void deleteFile(String filename, String bucketName) {
+    public void deleteFile(Integer file_id, String file_name, String bucket_name) {
         try {
+            jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");
+                cs.setInt(1, file_id);
+                cs.execute();
+                return null;
+            } );
+
             minioClient.removeObject(
-                    RemoveObjectArgs.builder().bucket(bucketName).object(filename).build()
+                    RemoveObjectArgs.builder().bucket(bucket_name).object(file_name).build()
             );
         } catch (Exception e) {
             throw new FileException("File deleted successfully", e);
