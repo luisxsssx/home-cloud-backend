@@ -1,11 +1,9 @@
 package com.home.cloud.controller;
 
-import com.home.cloud.model.DeleteFileModel;
-import com.home.cloud.model.FileModel;
-import com.home.cloud.model.FileRenameModel;
+import com.home.cloud.model.*;
 import com.home.cloud.service.FileService;
-import io.minio.*;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,11 +33,19 @@ public class FileController {
         return ResponseEntity.ok(objectKey);
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<List<String>> listFiles(@RequestParam String bucket_name,
-                                                  @RequestParam(required = false) String folder_name) {
-       List<String> files = fileService.listFiles(bucket_name, folder_name);
-        return ResponseEntity.ok(files);
+    @PostMapping("/list")
+    public List<FolderResponse> listRoot(@RequestBody DataModel dataModel) {
+        return fileService.listE(dataModel.getBucket_name(), dataModel.getFolder_name());
+    }
+
+    @GetMapping("/list/dir")
+    public ResponseEntity<List<String>> listFolders(@RequestParam String bucket_name) {
+        try {
+            List<String> files = fileService.listFolders(bucket_name);
+            return ResponseEntity.ok(files);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+        }
     }
 
     @GetMapping("/download/{filename}")

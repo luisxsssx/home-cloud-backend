@@ -2,6 +2,7 @@ package com.home.cloud.service;
 
 import com.home.cloud.exception.FileEliminationException;
 import com.home.cloud.exception.FileException;
+import com.home.cloud.model.FolderResponse;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,6 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.sql.CallableStatement;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -37,13 +39,15 @@ public class FileService {
             Integer bucket_id) {
         try {
             String file_name = file.getOriginalFilename();
+            String file_size = String.valueOf(file.getSize());
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-                CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?)");
+                CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?,?)");
 
                 cs.setString(1, folder_name);
                 cs.setString(2, file_name);
                 cs.setInt(3, account_id);
                 cs.setInt(4, bucket_id);
+                cs.setString(5, file_size);
                 cs.execute();
                 return null;
             } );
@@ -71,22 +75,76 @@ public class FileService {
         }
     }
 
-    public List<String> listFiles(String bucket_name, String folder_name) {
-        try {
-            List<String> filesNames = new ArrayList<>();
-            Iterable<Result<Item>> items = minioClient.listObjects(
-                    ListObjectsArgs.builder()
-                            .bucket(bucket_name)
-                            .prefix(folder_name)
-                            .recursive(true)
-                            .build());
-            for (Result<Item> item : items) {
-                filesNames.add(item.get().objectName());
-            }
-            return filesNames;
-        } catch (Exception e) {
-            throw new FileException("List" + bucket_name, e);
+    public List<String> listFolders(String bucket_name) throws Exception {
+        List<String> folder = new ArrayList<>();
+        Iterable<Result<Item>> results =
+                minioClient.listObjects(
+                        ListObjectsArgs.builder()
+                                .bucket(bucket_name)
+                                .recursive(true)
+                                .prefix("")
+                                .build()
+                );
+        for (Result<Item> r : results) {
+            Item item = r.get();
+            folder.add(item.objectName());
+
         }
+
+        StringBuilder sb = new StringBuilder(folder.toString());
+
+        int start = sb.indexOf("/");
+
+        if (start != -1) {
+            sb.delete(start, sb.length());
+        }
+
+        String s = sb.toString().trim();
+
+        return folder;
+    }
+
+    public List<FolderResponse> listE(String bucket_name, String folder_name) {
+        List<FolderResponse> elements = new ArrayList<>();
+
+        if(folder_name == null) {
+            folder_name = "";
+        }
+
+        if(!folder_name.isEmpty() && !folder_name.endsWith("/")) {
+            folder_name = folder_name + "/";
+        }
+
+        Iterable<Result<Item>> results = minioClient.listObjects(
+                ListObjectsArgs.builder()
+                        .bucket(bucket_name)
+                        .prefix(folder_name)
+                        .delimiter("/")
+                        .recursive(false)
+                        .build()
+        );
+        for (Result<Item> result : results) {
+            try {
+                Item item = result.get();
+                String fullName = item.objectName();
+                long size = item.size();
+
+                String n = fullName.substring(folder_name.length());
+
+                if (item.isDir()) {
+                    n = n.substring(0, n.length() - 1);
+                    if (!n.isEmpty()) {
+                        elements.add(new FolderResponse(n + "/", size));
+                    }
+                } else {
+                    elements.add(new FolderResponse(n, size));
+                }
+            } catch (Exception e) {
+                throw new RuntimeException("Error " + folder_name, e);
+            }
+        }
+
+        return elements;
     }
 
     public InputStreamResource downloadFile(String filename, String bucketName) {
