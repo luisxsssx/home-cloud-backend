@@ -4,6 +4,7 @@ import com.home.cloud.model.AccountModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.sql.CallableStatement;
@@ -13,14 +14,18 @@ public class AccountService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public void createAccount(AccountModel accountModel) {
+        String encodePassword = passwordEncoder.encode(accountModel.getAccount_password());
         jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
             CallableStatement cs =
                     connection.prepareCall("call sp_create_account(?,?,?)");
 
             cs.setString(1, accountModel.getAccount_username());
             cs.setString(2, accountModel.getAccount_email());
-            cs.setString(3, accountModel.getAccount_password());
+            cs.setString(3, encodePassword);
 
             cs.execute();
             return null;

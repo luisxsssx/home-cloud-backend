@@ -25,12 +25,13 @@ public class AccountController {
             accountService.createAccount(accountModel);
             Map<String, String> response = new HashMap<>();
             response.put("message", "Account registered successfully");
+            System.out.println("Body" + response);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (Exception e) {
+            e.printStackTrace();
             Map<String, String> response = new HashMap<>();
             response.put("message", "Failed register");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
-
 }
