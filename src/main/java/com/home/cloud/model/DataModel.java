@@ -9,5 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class DataModel {
     private String bucket_name;
+    private Integer account_id;
     private String folder_name;
 }

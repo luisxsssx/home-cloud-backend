@@ -2,6 +2,7 @@ package com.home.cloud.service;
 
 import com.home.cloud.exception.FileException;
 import com.home.cloud.exception.folder.FolderException;
+import com.home.cloud.model.FolderDataBaseModel;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,6 +82,26 @@ public class FolderService {
             }
         } catch (Exception e) {
             throw new FileException("List" + bucket_name, e);
+        }
+    }
+
+    // Get folder from database
+    public List<FolderDataBaseModel> getFolder(Integer account_id) {
+        try {
+            return jdbcTemplate.query(
+                    "SELECT * FROM f_get_folder(?)",
+                    new Object[]{ account_id },
+                    (rs, rowNum) -> {
+                        FolderDataBaseModel folder = new FolderDataBaseModel();
+                        folder.setFolder_id(rs.getInt("out_folder_id"));
+                        folder.setFolder_name(rs.getString("out_folder_name"));
+                        folder.setAccount_id(rs.getInt("out_account_id"));
+                        folder.setBucket_id(rs.getInt("out_bucket_id"));
+                        return folder;
+                    }
+            );
+        } catch (Exception e) {
+            throw new FolderException("Error getting data", e);
         }
     }
 }

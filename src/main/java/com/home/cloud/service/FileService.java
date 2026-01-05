@@ -104,7 +104,7 @@ public class FileService {
         return folder;
     }
 
-    public List<FolderResponse> listE(String bucket_name, String folder_name) {
+    public List<FolderResponse> listE(String bucket_name, Integer account_id, String folder_name) {
         List<FolderResponse> elements = new ArrayList<>();
 
         if(folder_name == null) {
@@ -188,11 +188,11 @@ public class FileService {
         }
     }
 
-    public void deleteFile(Integer file_id, String file_name, String bucket_name) {
+    public void deleteFile(String file_name, String bucket_name) {
         try {
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");
-                cs.setInt(1, file_id);
+                cs.setString(1, file_name);
                 cs.execute();
                 return null;
             } );

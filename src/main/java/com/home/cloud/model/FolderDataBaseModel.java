@@ -7,7 +7,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class DeleteFileModel {
-    private String file_name;
-    private String bucket_name;
+public class FolderDataBaseModel {
+    private Integer folder_id;
+    private String folder_name;
+    private Integer account_id;
+    private Integer bucket_id;
 }

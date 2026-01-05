@@ -35,7 +35,7 @@ public class FileController {
 
     @PostMapping("/list")
     public List<FolderResponse> listRoot(@RequestBody DataModel dataModel) {
-        return fileService.listE(dataModel.getBucket_name(), dataModel.getFolder_name());
+        return fileService.listE(dataModel.getBucket_name(), dataModel.getAccount_id(), dataModel.getFolder_name());
     }
 
     @GetMapping("/list/dir")
@@ -57,7 +57,7 @@ public class FileController {
                 .body(resource);
     }
 
-    @PostMapping("/rename")
+    @PostMapping("/rename/file")
     public ResponseEntity<String> renameFile(@RequestBody FileRenameModel fileRenameModel) {
         fileService.renameFile(fileRenameModel.getBucket_name(),
                 fileRenameModel.getNew_file_name(),
@@ -67,7 +67,7 @@ public class FileController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteFile(@RequestBody DeleteFileModel deleteFileModel) {
-        fileService.deleteFile(deleteFileModel.getFile_id(), deleteFileModel.getFile_name(), deleteFileModel.getBucket_name());
+        fileService.deleteFile(deleteFileModel.getFile_name(), deleteFileModel.getBucket_name());
         return ResponseEntity.ok("File successfully deleted" + " " + deleteFileModel.getFile_name());
     }
 }
