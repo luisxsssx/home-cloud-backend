@@ -12,5 +12,4 @@ import java.util.Map;
 public class LoginResponse {
     private String token;
     private String username;
-    private Map<String, Object> userData;
 }

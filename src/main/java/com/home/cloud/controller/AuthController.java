@@ -1,11 +1,9 @@
 package com.home.cloud.controller;
 
-import com.home.cloud.model.AccountModel;
 import com.home.cloud.model.LoginRequest;
+import com.home.cloud.model.LoginResponse;
 import com.home.cloud.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -25,24 +23,8 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
-        try {
-            String token = accountService.login(
-                    loginRequest.getUsername(),
-                    loginRequest.getPassword()
-            );
-
-            if (token == null) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(Map.of("error", "Invalid username or password"));
-            }
-
-            return ResponseEntity.ok(Map.of("token", token));
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(Map.of("error", e.getMessage()));
-        }
+    public LoginResponse login(@RequestBody LoginRequest loginRequest) throws Exception {
+        return accountService.login(loginRequest.getUsername(), loginRequest.getPassword());
     }
 
 }

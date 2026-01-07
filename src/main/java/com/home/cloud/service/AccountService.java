@@ -1,9 +1,8 @@
 package com.home.cloud.service;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.home.cloud.jwt.JwtFilter;
 import com.home.cloud.jwt.JwtUtil;
 import com.home.cloud.model.AccountModel;
+import com.home.cloud.model.LoginResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -24,9 +23,6 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
     public AccountService(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
     }
@@ -46,10 +42,8 @@ public class AccountService {
         });
     }
 
-    public String login(String username, String password) throws Exception {
-
+    public LoginResponse login(String username, String password) throws Exception {
         String query = "select * from f_get_account(?)";
-
         AccountModel account = jdbcTemplate.queryForObject(
                 query,
                 new Object[]{username},
@@ -73,7 +67,8 @@ public class AccountService {
             throw new Exception("Invalid password");
         }
 
-        return jwtUtil.generateToken(account.getUsername());
-    }
+        String token = jwtUtil.generateToken(account.getUsername());
 
+        return new LoginResponse(token, account.getUsername());
+    }
 }
