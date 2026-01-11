@@ -28,14 +28,14 @@ public class FileController {
     ) throws Exception {
         String objectKey = fileService.upFile(file, fileModel.getBucket_name(),
                 fileModel.getFolder_name(),
-                fileModel.getAccount_id(),
                 fileModel.getBucket_id());
         return ResponseEntity.ok(objectKey);
     }
 
     @PostMapping("/list")
     public List<FolderResponse> listRoot(@RequestBody DataModel dataModel) {
-        return fileService.listE(dataModel.getBucket_name(), dataModel.getAccount_id(), dataModel.getFolder_name());
+        return fileService.listRoot(dataModel.getBucket_name(),
+                dataModel.getFolder_name());
     }
 
     @GetMapping("/list/dir")

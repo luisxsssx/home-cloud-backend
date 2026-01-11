@@ -2,6 +2,8 @@ package com.home.cloud.service;
 
 import com.home.cloud.exception.FileEliminationException;
 import com.home.cloud.exception.FileException;
+import com.home.cloud.jwt.JwtUtil;
+import com.home.cloud.model.AccountId;
 import com.home.cloud.model.FolderResponse;
 import io.minio.*;
 import io.minio.messages.Item;
@@ -9,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -24,6 +28,9 @@ public class FileService {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
+    @Autowired
+    private JwtUtil jwtUtil;
+
     private final MinioClient minioClient;
 
     public FileService(MinioClient minioClient) {
@@ -35,14 +42,14 @@ public class FileService {
             MultipartFile file,
             String bucket_name,
             String folder_name,
-            Integer account_id,
             Integer bucket_id) {
         try {
+            AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             String file_name = file.getOriginalFilename();
             String file_size = String.valueOf(file.getSize());
+            Integer account_id = id.getAccount_id();
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?,?)");
-
                 cs.setString(1, folder_name);
                 cs.setString(2, file_name);
                 cs.setInt(3, account_id);
@@ -50,7 +57,8 @@ public class FileService {
                 cs.setString(5, file_size);
                 cs.execute();
                 return null;
-            } );
+            });
+
 
             String fileName = file.getOriginalFilename();
             String objectName;
@@ -104,7 +112,7 @@ public class FileService {
         return folder;
     }
 
-    public List<FolderResponse> listE(String bucket_name, Integer account_id, String folder_name) {
+    public List<FolderResponse> listRoot(String bucket_name, String folder_name) {
         List<FolderResponse> elements = new ArrayList<>();
 
         if(folder_name == null) {

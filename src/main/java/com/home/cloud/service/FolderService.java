@@ -2,12 +2,15 @@ package com.home.cloud.service;
 
 import com.home.cloud.exception.FileException;
 import com.home.cloud.exception.folder.FolderException;
+import com.home.cloud.model.AccountId;
 import com.home.cloud.model.FolderDataBaseModel;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
@@ -30,14 +33,14 @@ public class FolderService {
     }
 
     // Make folder
-    public void makeFolder(String bucketName, String folder_name, Integer account_id, Integer bucket_id) {
+    public void makeFolder(String bucketName, String folder_name, Integer bucket_id) {
         var emptyStream = new ByteArrayInputStream(new byte[] {});
-
         if (!bucketService.isBucketExists(bucketName)) {
             throw new IllegalArgumentException("Bucket not found: " + bucketName);
         }
-
         try {
+            AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Integer account_id = id.getAccount_id();
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_account_folder(?,?,?)");
 
@@ -86,8 +89,10 @@ public class FolderService {
     }
 
     // Get folder from database
-    public List<FolderDataBaseModel> getFolder(Integer account_id) {
+    public List<FolderDataBaseModel> getFolder() {
         try {
+            AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Integer account_id = id.getAccount_id();
             return jdbcTemplate.query(
                     "SELECT * FROM f_get_folder(?)",
                     new Object[]{ account_id },

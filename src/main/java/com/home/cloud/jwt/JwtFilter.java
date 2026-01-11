@@ -1,5 +1,6 @@
 package com.home.cloud.jwt;
 
+import com.home.cloud.model.AccountId;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,14 +30,19 @@ public class JwtFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            String account_name = jwtUtil.extractAccountName(token);
+            try {
+                Integer id = jwtUtil.getAccountId(token);
+                String account_name = jwtUtil.extractAccountName(token);
+                AccountId accountId = new AccountId(account_name, id);
 
-            var auth = new UsernamePasswordAuthenticationToken(
-                    account_name, null, List.of());
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+                UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
+                        accountId, null, List.of()
+                );
+                SecurityContextHolder.getContext().setAuthentication(auth);
+            } catch (Exception e) {
+                SecurityContextHolder.clearContext();
+            }
         }
-
         filterChain.doFilter(request, response);
     }
 }

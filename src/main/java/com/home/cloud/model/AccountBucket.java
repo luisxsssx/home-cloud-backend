@@ -9,6 +9,6 @@ import lombok.NoArgsConstructor;
 @Data
 public class AccountBucket {
     private Integer bucket_id;
+    private String username;
     private String bucket_name;
-    private Integer account_id;
 }

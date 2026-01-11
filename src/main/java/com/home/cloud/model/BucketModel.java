@@ -7,9 +7,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class FileModel {
+public class BucketModel {
     private String bucket_name;
-    private String folder_name;
-    //private Integer account_id;
-    private Integer bucket_id;
 }
