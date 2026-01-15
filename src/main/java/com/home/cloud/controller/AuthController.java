@@ -5,6 +5,7 @@ import com.home.cloud.model.LoginRequest;
 import com.home.cloud.model.LoginResponse;
 import com.home.cloud.service.AccountService;
 import com.home.cloud.service.AuthService;
+import com.home.cloud.service.BucketService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,10 +25,14 @@ public class AuthController {
     private final AccountService accountService;
 
     @Autowired
+    private final BucketService bucketService;
+
+    @Autowired
     private final AuthService authService;
 
-    public AuthController(AccountService accountService, AuthService authService) {
+    public AuthController(AccountService accountService, BucketService bucketService, AuthService authService) {
         this.accountService = accountService;
+        this.bucketService = bucketService;
         this.authService = authService;
     }
 

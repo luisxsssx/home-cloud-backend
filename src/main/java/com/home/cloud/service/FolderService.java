@@ -9,7 +9,6 @@ import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -33,7 +32,7 @@ public class FolderService {
     }
 
     // Make folder
-    public void makeFolder(String bucketName, String folder_name, Integer bucket_id) {
+    public void makeFolder(String bucketName, String folder_name) {
         var emptyStream = new ByteArrayInputStream(new byte[] {});
         if (!bucketService.isBucketExists(bucketName)) {
             throw new IllegalArgumentException("Bucket not found: " + bucketName);
@@ -42,11 +41,9 @@ public class FolderService {
             AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             Integer account_id = id.getAccount_id();
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-                CallableStatement cs = connection.prepareCall("call sp_account_folder(?,?,?)");
-
+                CallableStatement cs = connection.prepareCall("call sp_account_folder(?,?)");
                 cs.setString(1, folder_name);
                 cs.setInt(2, account_id);
-                cs.setInt(3, bucket_id);
                 cs.execute();
                 return null;
             });

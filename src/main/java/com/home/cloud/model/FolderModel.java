@@ -12,5 +12,4 @@ public class FolderModel {
     private Integer folder_id;
     private String folder_name;
     private String bucket_name;
-    private Integer bucket_id;
 }

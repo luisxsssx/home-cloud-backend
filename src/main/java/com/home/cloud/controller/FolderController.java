@@ -22,7 +22,7 @@ public class FolderController {
     // Make folder
     @PostMapping("/create/folder")
     public ResponseEntity<?> makeFolder(@RequestBody FolderModel folderModel) {
-        folderService.makeFolder(folderModel.getBucket_name(), folderModel.getFolder_name(), folderModel.getBucket_id());
+        folderService.makeFolder(folderModel.getBucket_name(), folderModel.getFolder_name());
         return ResponseEntity.ok(Map.of("message", "Folder created successfully", "folder", folderModel.getFolder_name()));
     }
 

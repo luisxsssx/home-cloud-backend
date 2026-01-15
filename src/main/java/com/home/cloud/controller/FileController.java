@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("cloud/files")
@@ -21,15 +22,15 @@ public class FileController {
         this.fileService = fileService;
     }
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<String> uploadFile(
+    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<?> uploadFile(
             @RequestPart("file") MultipartFile file,
             @RequestPart("data") FileModel fileModel
     ) throws Exception {
         String objectKey = fileService.upFile(file, fileModel.getBucket_name(),
                 fileModel.getFolder_name(),
                 fileModel.getBucket_id());
-        return ResponseEntity.ok(objectKey);
+        return ResponseEntity.ok(Map.of("message", "File uploaded successfully: " + " " + file.getName()));
     }
 
     @PostMapping("/list")

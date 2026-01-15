@@ -8,5 +8,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Data
 public class BucketModel {
+    private Integer bucket_id;
     private String bucket_name;
 }

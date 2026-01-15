@@ -30,7 +30,6 @@ public class BucketService {
     }
 
     public void createBucket(String username) {
-
         String bucket_name = username + "bucket";
 
         AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -89,6 +88,7 @@ public class BucketService {
                     new Object[]{account_id},
                     (rs, rowNum) -> {
                         BucketModel bucket = new BucketModel();
+                        bucket.setBucket_id(rs.getInt("out_bucket_id"));
                         bucket.setBucket_name(rs.getString("out_bucket_name"));
                         return bucket;
                     }
