@@ -11,17 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.jdbc.core.ConnectionCallback;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.sql.CallableStatement;
-import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 @Service
@@ -42,9 +38,15 @@ public class FileService {
     // Save the file data to the database and upload the file to Minio
     public String upFile(
             MultipartFile file,
-            String bucket_name,
             String folder_name,
             Integer bucket_id) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         try {
             AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             String file_name = file.getOriginalFilename();
@@ -85,7 +87,14 @@ public class FileService {
         }
     }
 
-    public List<String> listFolders(String bucket_name) throws Exception {
+    public List<String> listFolders() throws Exception {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         List<String> folder = new ArrayList<>();
         Iterable<Result<Item>> results =
                 minioClient.listObjects(
@@ -114,7 +123,15 @@ public class FileService {
         return folder;
     }
 
-    public List<FolderResponse> listRoot(String bucket_name, String folder_name) {
+    public List<FolderResponse> listRoot(String folder_name) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
+
         List<FolderResponse> elements = new ArrayList<>();
 
         if(folder_name == null) {
@@ -158,11 +175,18 @@ public class FileService {
         return elements;
     }
 
-    public InputStreamResource downloadFile(String filename, String bucketName) {
+    public InputStreamResource downloadFile(String filename) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         try {
             InputStream stream = minioClient.getObject(
                     GetObjectArgs.builder()
-                            .bucket(bucketName)
+                            .bucket(bucket_name)
                             .object(filename)
                             .build()
             );
@@ -172,7 +196,14 @@ public class FileService {
         }
     }
 
-    public void renameFile(String bucket_name, String new_file_name, String old_file_name) {
+    public void renameFile(String new_file_name, String old_file_name) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         try {
             minioClient.copyObject(
                     CopyObjectArgs
@@ -199,7 +230,14 @@ public class FileService {
         }
     }
 
-    public void deleteFile(String file_name, String bucket_name) {
+    public void deleteFile(String file_name) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         try {
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");

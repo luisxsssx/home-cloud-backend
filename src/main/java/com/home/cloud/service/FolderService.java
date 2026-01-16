@@ -32,10 +32,17 @@ public class FolderService {
     }
 
     // Make folder
-    public void makeFolder(String bucketName, String folder_name) {
+    public void makeFolder( String folder_name) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         var emptyStream = new ByteArrayInputStream(new byte[] {});
-        if (!bucketService.isBucketExists(bucketName)) {
-            throw new IllegalArgumentException("Bucket not found: " + bucketName);
+        if (!bucketService.isBucketExists(bucket_name)) {
+            throw new IllegalArgumentException("Bucket not found: " + bucket_name);
         }
         try {
             AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -49,7 +56,7 @@ public class FolderService {
             });
             minioClient.putObject(
                     PutObjectArgs.builder()
-                            .bucket(bucketName)
+                            .bucket(bucket_name)
                             .stream(emptyStream, 0, -1)
                             .object(folder_name.endsWith("/") ? folder_name : folder_name + "/")
                             .build()
@@ -59,7 +66,14 @@ public class FolderService {
         }
     }
 
-    public void deleteFolder(Integer folder_id, String bucket_name, String folder_name) {
+    public void deleteFolder(Integer folder_id, String folder_name) {
+
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        Integer accountId = principal.getAccount_id();
+
+        String bucket_name = "account" + accountId;
+
         try {
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_delete_folder(?)");

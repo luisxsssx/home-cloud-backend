@@ -29,16 +29,37 @@ public class BucketService {
         this.minioClient = minioClient;
     }
 
-    public void createBucket(String username) {
-        String bucket_name = username + "bucket";
+    public void createBucket() {
+        AccountId id = (AccountId) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
 
-        AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer account_id = id.getAccount_id();
+
+        String bucket_name = "account" + account_id;
 
         if (!isBucketNameValid(bucket_name)) {
             throw new IllegalArgumentException("Invalid bucket name: " + bucket_name);
         }
+
         try {
+            boolean exist = minioClient.bucketExists(
+                    BucketExistsArgs.builder()
+                            .bucket(bucket_name)
+                            .build()
+            );
+
+            if (exist) {
+                return;
+            }
+
+            minioClient.makeBucket(
+                    MakeBucketArgs
+                            .builder()
+                            .bucket(bucket_name)
+                            .build()
+            );
+
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_account_bucket(?,?)");
 
@@ -47,14 +68,9 @@ public class BucketService {
                 cs.execute();
                 return null;
             });
-            minioClient.makeBucket(
-                    MakeBucketArgs
-                            .builder()
-                            .bucket(bucket_name)
-                            .build()
-            );
+
         } catch (Exception e) {
-            throw new BucketCreationException("I cannot create the bucket", e);
+            throw new BucketCreationException("I cannot ensure the bucket for account " + account_id, e);
         }
     }
 

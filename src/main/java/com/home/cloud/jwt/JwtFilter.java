@@ -1,11 +1,14 @@
 package com.home.cloud.jwt;
 
 import com.home.cloud.model.AccountId;
+import com.home.cloud.service.BucketService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
@@ -18,8 +21,12 @@ public class JwtFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
 
-    public JwtFilter(JwtUtil jwtUtil) {
+    @Autowired
+    private final BucketService bucketService;
+
+    public JwtFilter(JwtUtil jwtUtil, BucketService bucketService) {
         this.jwtUtil = jwtUtil;
+        this.bucketService = bucketService;
     }
 
     @Override
@@ -43,6 +50,17 @@ public class JwtFilter extends OncePerRequestFilter {
                 SecurityContextHolder.clearContext();
             }
         }
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+        if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof AccountId) {
+            try {
+                bucketService.createBucket();
+            } catch (Exception e) {
+                logger.warn("Bucket ensure failed", e);
+            }
+        }
+
         filterChain.doFilter(request, response);
     }
 }

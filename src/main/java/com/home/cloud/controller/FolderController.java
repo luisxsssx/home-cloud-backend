@@ -22,17 +22,16 @@ public class FolderController {
     // Make folder
     @PostMapping("/create/folder")
     public ResponseEntity<?> makeFolder(@RequestBody FolderModel folderModel) {
-        folderService.makeFolder(folderModel.getBucket_name(), folderModel.getFolder_name());
+        folderService.makeFolder(folderModel.getFolder_name());
         return ResponseEntity.ok(Map.of("message", "Folder created successfully", "folder", folderModel.getFolder_name()));
     }
 
     @DeleteMapping("/delete/folder")
     public ResponseEntity<String> deleteFolder(@RequestBody DeleteFolderModel deleteFolderModel) {
         folderService.deleteFolder(deleteFolderModel.getFolder_id(),
-                deleteFolderModel.getBucket_name(), deleteFolderModel.getFolder_name());
+                 deleteFolderModel.getFolder_name());
         return ResponseEntity.ok("Folder deleted successfully: " + " " + deleteFolderModel.getFolder_name());
     }
-
 
     @PostMapping("/list-folders")
     public List<FolderDataBaseModel> listFolders() {

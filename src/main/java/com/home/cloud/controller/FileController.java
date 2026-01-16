@@ -27,7 +27,7 @@ public class FileController {
             @RequestPart("file") MultipartFile file,
             @RequestPart("data") FileModel fileModel
     ) throws Exception {
-        String objectKey = fileService.upFile(file, fileModel.getBucket_name(),
+        String objectKey = fileService.upFile(file,
                 fileModel.getFolder_name(),
                 fileModel.getBucket_id());
         return ResponseEntity.ok(Map.of("message", "File uploaded successfully: " + " " + file.getName()));
@@ -35,14 +35,13 @@ public class FileController {
 
     @PostMapping("/list")
     public List<FolderResponse> listRoot(@RequestBody DataModel dataModel) {
-        return fileService.listRoot(dataModel.getBucket_name(),
-                dataModel.getFolder_name());
+        return fileService.listRoot(dataModel.getFolder_name());
     }
 
     @GetMapping("/list/dir")
-    public ResponseEntity<List<String>> listFolders(@RequestParam String bucket_name) {
+    public ResponseEntity<List<String>> listFolders() {
         try {
-            List<String> files = fileService.listFolders(bucket_name);
+            List<String> files = fileService.listFolders();
             return ResponseEntity.ok(files);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
@@ -50,9 +49,8 @@ public class FileController {
     }
 
     @GetMapping("/download/{filename}")
-    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename,
-                                                            @RequestParam String bucketName) {
-        InputStreamResource resource = fileService.downloadFile(filename, bucketName);
+    public ResponseEntity<InputStreamResource> downloadFile(@PathVariable String filename) {
+        InputStreamResource resource = fileService.downloadFile(filename);
         return ResponseEntity.ok()
                 .contentType(MediaType.APPLICATION_OCTET_STREAM)
                 .body(resource);
@@ -60,7 +58,7 @@ public class FileController {
 
     @PostMapping("/rename/file")
     public ResponseEntity<String> renameFile(@RequestBody FileRenameModel fileRenameModel) {
-        fileService.renameFile(fileRenameModel.getBucket_name(),
+        fileService.renameFile(
                 fileRenameModel.getNew_file_name(),
                 fileRenameModel.getOld_file_name());
         return ResponseEntity.ok("File renamed successfully");
@@ -68,7 +66,7 @@ public class FileController {
 
     @DeleteMapping("/delete")
     public ResponseEntity<String> deleteFile(@RequestBody DeleteFileModel deleteFileModel) {
-        fileService.deleteFile(deleteFileModel.getFile_name(), deleteFileModel.getBucket_name());
+        fileService.deleteFile(deleteFileModel.getFile_name());
         return ResponseEntity.ok("File successfully deleted" + " " + deleteFileModel.getFile_name());
     }
 }
