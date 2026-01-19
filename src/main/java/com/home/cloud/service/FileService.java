@@ -125,20 +125,16 @@ public class FileService {
 
     public List<FolderResponse> listRoot(String folder_name) {
 
-        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        AccountId principal = (AccountId) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
 
         Integer accountId = principal.getAccount_id();
-
         String bucket_name = "account" + accountId;
-
 
         List<FolderResponse> elements = new ArrayList<>();
 
-        if(folder_name == null) {
-            folder_name = "";
-        }
-
-        if(!folder_name.isEmpty() && !folder_name.endsWith("/")) {
+        if (!folder_name.isEmpty() && !folder_name.endsWith("/")) {
             folder_name = folder_name + "/";
         }
 
@@ -150,13 +146,17 @@ public class FileService {
                         .recursive(false)
                         .build()
         );
+
         for (Result<Item> result : results) {
             try {
                 Item item = result.get();
                 String fullName = item.objectName();
+
+                if (!folder_name.isEmpty() && fullName.equals(folder_name)) {
+                    continue;
+                }
+
                 long size = item.size();
-
-
                 String n = fullName.substring(folder_name.length());
 
                 if (item.isDir()) {
@@ -167,6 +167,7 @@ public class FileService {
                 } else {
                     elements.add(new FolderResponse(n, size));
                 }
+
             } catch (Exception e) {
                 throw new RuntimeException("Error " + folder_name, e);
             }
@@ -174,6 +175,7 @@ public class FileService {
 
         return elements;
     }
+
 
     public InputStreamResource downloadFile(String filename) {
 

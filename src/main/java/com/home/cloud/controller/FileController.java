@@ -56,7 +56,7 @@ public class FileController {
                 .body(resource);
     }
 
-    @PostMapping("/rename/file")
+    @PostMapping("/rename")
     public ResponseEntity<String> renameFile(@RequestBody FileRenameModel fileRenameModel) {
         fileService.renameFile(
                 fileRenameModel.getNew_file_name(),
