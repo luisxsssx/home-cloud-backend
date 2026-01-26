@@ -1,5 +1,7 @@
 package com.home.cloud.service;
 
+import com.home.cloud.exception.account.InvalidPasswordException;
+import com.home.cloud.exception.account.InvalidUsernameException;
 import com.home.cloud.jwt.JwtFilter;
 import com.home.cloud.jwt.JwtUtil;
 import com.home.cloud.model.AccountModel;
@@ -52,7 +54,7 @@ public class AuthService {
         }
 
         if (!passwordEncoder.matches(password, account.getPassword())) {
-            throw new Exception("Invalid password");
+            throw new InvalidPasswordException("Invalid password provided");
         }
 
         String token = jwtUtil.generateToken(account.getUsername(), account.getAccount_id());

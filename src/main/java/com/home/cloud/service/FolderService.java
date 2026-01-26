@@ -67,11 +67,8 @@ public class FolderService {
     }
 
     public void deleteFolder(Integer folder_id, String folder_name) {
-
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Integer accountId = principal.getAccount_id();
-
         String bucket_name = "account" + accountId;
 
         try {
