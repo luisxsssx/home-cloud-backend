@@ -66,7 +66,7 @@ public class FolderService {
         }
     }
 
-    public void deleteFolder(Integer folder_id, String folder_name) {
+    public void deleteFolder(String folder_name) {
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer accountId = principal.getAccount_id();
         String bucket_name = "account" + accountId;
@@ -74,7 +74,7 @@ public class FolderService {
         try {
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_delete_folder(?)");
-                cs.setInt(1, folder_id);
+                cs.setString(1, folder_name);
                 cs.execute();
                 return null;
             } );

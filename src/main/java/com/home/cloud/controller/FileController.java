@@ -65,8 +65,14 @@ public class FileController {
     }
 
     @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteFile(@RequestBody DeleteFileModel deleteFileModel) {
+    public ResponseEntity<?> deleteFile(@RequestBody DeleteFileModel deleteFileModel) {
         fileService.deleteFile(deleteFileModel.getFile_name());
-        return ResponseEntity.ok("File successfully deleted" + " " + deleteFileModel.getFile_name());
+        return ResponseEntity.ok(Map.of("message", "File folder deleted successfully", "file", deleteFileModel.getFile_name()));
+    }
+
+    @DeleteMapping("/del")
+    public ResponseEntity<?> deleteItems(@RequestBody DeleteItemModel deleteItemModel) {
+        fileService.deleteItem(deleteItemModel);
+        return ResponseEntity.ok(Map.of("message", "Item deleted successfully", "item", deleteItemModel));
     }
 }

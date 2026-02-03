@@ -27,10 +27,9 @@ public class FolderController {
     }
 
     @PostMapping("/delete/folder")
-    public ResponseEntity<String> deleteFolder(@RequestBody DeleteFolderModel deleteFolderModel) {
-        folderService.deleteFolder(deleteFolderModel.getFolder_id(),
-                 deleteFolderModel.getFolder_name());
-        return ResponseEntity.ok("Folder deleted successfully: " + " " + deleteFolderModel.getFolder_name());
+    public ResponseEntity<?> deleteFolder(@RequestBody DeleteFolderModel deleteFolderModel) {
+        folderService.deleteFolder(deleteFolderModel.getFolder_name());
+        return ResponseEntity.ok(Map.of("message", "Folder deleted successfully", "folder", deleteFolderModel.getFolder_name()));
     }
 
     @PostMapping("/list-folders")

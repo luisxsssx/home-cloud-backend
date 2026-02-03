@@ -4,6 +4,7 @@ import com.home.cloud.exception.FileEliminationException;
 import com.home.cloud.exception.FileException;
 import com.home.cloud.jwt.JwtUtil;
 import com.home.cloud.model.AccountId;
+import com.home.cloud.model.DeleteItemModel;
 import com.home.cloud.model.FolderResponse;
 import io.minio.*;
 import io.minio.messages.Item;
@@ -233,13 +234,9 @@ public class FileService {
     }
 
     public void deleteFile(String file_name) {
-
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Integer accountId = principal.getAccount_id();
-
         String bucket_name = "account" + accountId;
-
         try {
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
                 CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");
@@ -253,6 +250,52 @@ public class FileService {
             );
         } catch (Exception e) {
             throw new FileException("File deleted successfully", e);
+        }
+    }
+
+    public void deleteItem(DeleteItemModel deleteItemModel) {
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer accountId = principal.getAccount_id();
+        String bucket_name = "account" + accountId;
+        try {
+            switch (deleteItemModel.getItemType()) {
+                case FILE -> {
+                    jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                        CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");
+                        cs.setString(1, deleteItemModel.getName());
+                        cs.execute();
+                        return null;
+                    } );
+
+                    minioClient.removeObject(
+                            RemoveObjectArgs.builder().bucket(bucket_name).object(deleteItemModel.getName()).build()
+                    );
+                }
+
+                case FOLDER -> {
+                    jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                        CallableStatement cs = connection.prepareCall("call sp_delete_folder(?)");
+                        cs.setString(1, deleteItemModel.getName());
+                        cs.execute();
+                        return null;
+                    } );
+
+                    List<String> result = new ArrayList<>();
+                    Iterable<Result<Item>> items = minioClient.listObjects(
+                            ListObjectsArgs.builder()
+                                    .bucket(bucket_name)
+                                    .prefix(deleteItemModel.getName())
+                                    .build());
+                    for (Result<Item> item : items) {
+                        minioClient.removeObject(RemoveObjectArgs.builder()
+                                .bucket(bucket_name)
+                                .object(item.get().objectName())
+                                .build());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 }
