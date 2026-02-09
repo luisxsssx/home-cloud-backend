@@ -16,5 +16,5 @@ public class AccountModel {
     private String password;
     private Timestamp created_at;
     private Timestamp updated_at;
-
+    private Integer bucket_id;
 }

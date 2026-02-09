@@ -19,11 +19,12 @@ public class JwtUtil {
     private long expiration;
 
     // Generate token
-    public String generateToken(String account_name, Integer account_id) {
+    public String generateToken(String account_name, Integer account_id, Integer bucket_id) {
         return Jwts.builder()
                 .subject(account_name)
                 .claim("username", account_name)
                 .claim("account_id", account_id)
+                .claim("bucket_id", bucket_id)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)
@@ -47,6 +48,16 @@ public class JwtUtil {
                 .getPayload();
 
         return claims.get("account_id", Integer.class);
+    }
+
+    public Integer getBucketId(String token) {
+        Claims claims = Jwts.parser()
+                .setSigningKey(secret.getBytes())
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+
+        return claims.get("bucket_id", Integer.class);
     }
 
 }

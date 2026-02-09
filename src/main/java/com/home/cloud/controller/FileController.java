@@ -28,8 +28,7 @@ public class FileController {
             @RequestPart("data") FileModel fileModel
     ) throws Exception {
         String objectKey = fileService.upFile(file,
-                fileModel.getFolder_name(),
-                fileModel.getBucket_id());
+                fileModel.getFolder_name());
         return ResponseEntity.ok(Map.of("message", "File uploaded successfully: " + " " + file.getName()));
     }
 
@@ -58,9 +57,7 @@ public class FileController {
 
     @PostMapping("/rename")
     public ResponseEntity<String> renameFile(@RequestBody FileRenameModel fileRenameModel) {
-        fileService.renameFile(
-                fileRenameModel.getNew_file_name(),
-                fileRenameModel.getOld_file_name());
+        fileService.renameFile(fileRenameModel);
         return ResponseEntity.ok("File renamed successfully");
     }
 

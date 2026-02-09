@@ -45,6 +45,7 @@ public class AuthService {
                     a.setPassword(rs.getString("out_password"));
                     a.setCreated_at(rs.getTimestamp("out_created_at"));
                     a.setUpdated_at(rs.getTimestamp("out_updated_at"));
+                    a.setBucket_id(rs.getInt("out_bucket_id"));
                     return a;
                 }
         );
@@ -57,9 +58,9 @@ public class AuthService {
             throw new InvalidPasswordException("Invalid password provided");
         }
 
-        String token = jwtUtil.generateToken(account.getUsername(), account.getAccount_id());
+        String token = jwtUtil.generateToken(account.getUsername(), account.getAccount_id(), account.getBucket_id());
 
-        return new LoginResponse(account.getAccount_id(), account.getUsername(), token);
+        return new LoginResponse(account.getAccount_id(), account.getUsername(), token, account.getBucket_id());
     }
 
 }

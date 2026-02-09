@@ -3,9 +3,7 @@ package com.home.cloud.service;
 import com.home.cloud.exception.FileEliminationException;
 import com.home.cloud.exception.FileException;
 import com.home.cloud.jwt.JwtUtil;
-import com.home.cloud.model.AccountId;
-import com.home.cloud.model.DeleteItemModel;
-import com.home.cloud.model.FolderResponse;
+import com.home.cloud.model.*;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +37,11 @@ public class FileService {
     // Save the file data to the database and upload the file to Minio
     public String upFile(
             MultipartFile file,
-            String folder_name,
-            Integer bucket_id) {
-
+            String folder_name) {
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
+        BucketId bucketId = (BucketId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer accountId = principal.getAccount_id();
-
+        Integer bucket_id = bucketId.getBucket_id();
         String bucket_name = "account" + accountId;
 
         try {
@@ -89,11 +85,8 @@ public class FileService {
     }
 
     public List<String> listFolders() throws Exception {
-
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Integer accountId = principal.getAccount_id();
-
         String bucket_name = "account" + accountId;
 
         List<String> folder = new ArrayList<>();
@@ -125,7 +118,6 @@ public class FileService {
     }
 
     public List<FolderResponse> listRoot(String folder_name) {
-
         AccountId principal = (AccountId) SecurityContextHolder.getContext()
                 .getAuthentication()
                 .getPrincipal();
@@ -179,11 +171,8 @@ public class FileService {
 
 
     public InputStreamResource downloadFile(String filename) {
-
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Integer accountId = principal.getAccount_id();
-
         String bucket_name = "account" + accountId;
 
         try {
@@ -199,24 +188,42 @@ public class FileService {
         }
     }
 
-    public void renameFile(String new_file_name, String old_file_name) {
-
+    public void renameFile(FileRenameModel fileRenameModel) {
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
         Integer accountId = principal.getAccount_id();
-
         String bucket_name = "account" + accountId;
-
         try {
+            switch (fileRenameModel.getItemType()) {
+                case FILE -> {
+                    jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                        CallableStatement cs = connection.prepareCall("call sp_update_file_name(?,?)");
+                        cs.setString(1, fileRenameModel.getNew_file_name());
+                        cs.setString(2, fileRenameModel.getOld_file_name());
+                        cs.execute();
+                        return null;
+                    } );
+                }
+
+                case FOLDER -> {
+                    jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                        CallableStatement cs = connection.prepareCall("call sp_update_folder_name(?,?)");
+                        cs.setString(1, fileRenameModel.getNew_file_name());
+                        cs.setString(2, fileRenameModel.getOld_file_name());
+                        cs.execute();
+                        return null;
+                    } );
+                }
+            }
+
             minioClient.copyObject(
                     CopyObjectArgs
                             .builder()
                             .bucket(bucket_name)
-                            .object(new_file_name)
+                            .object(fileRenameModel.getNew_file_name())
                             .source(
                                     CopySource.builder()
                                             .bucket(bucket_name)
-                                            .object(old_file_name)
+                                            .object(fileRenameModel.getOld_file_name())
                                             .build()
                             )
                             .build()
@@ -225,31 +232,11 @@ public class FileService {
             minioClient.removeObject(
                     RemoveObjectArgs.builder()
                             .bucket(bucket_name)
-                            .object(old_file_name)
+                            .object(fileRenameModel.getOld_file_name())
                             .build()
             );
         } catch (Exception e) {
             throw new FileEliminationException("File removed successfully", e);
-        }
-    }
-
-    public void deleteFile(String file_name) {
-        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        Integer accountId = principal.getAccount_id();
-        String bucket_name = "account" + accountId;
-        try {
-            jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-                CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");
-                cs.setString(1, file_name);
-                cs.execute();
-                return null;
-            } );
-
-            minioClient.removeObject(
-                    RemoveObjectArgs.builder().bucket(bucket_name).object(file_name).build()
-            );
-        } catch (Exception e) {
-            throw new FileException("File deleted successfully", e);
         }
     }
 
@@ -296,6 +283,26 @@ public class FileService {
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void deleteFile(String file_name) {
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer accountId = principal.getAccount_id();
+        String bucket_name = "account" + accountId;
+        try {
+            jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
+                CallableStatement cs = connection.prepareCall("call sp_delete_file(?)");
+                cs.setString(1, file_name);
+                cs.execute();
+                return null;
+            } );
+
+            minioClient.removeObject(
+                    RemoveObjectArgs.builder().bucket(bucket_name).object(file_name).build()
+            );
+        } catch (Exception e) {
+            throw new FileException("File deleted successfully", e);
         }
     }
 }

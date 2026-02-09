@@ -39,6 +39,7 @@ public class JwtFilter extends OncePerRequestFilter {
             String token = authHeader.substring(7);
             try {
                 Integer id = jwtUtil.getAccountId(token);
+                Integer bucket_id = jwtUtil.getBucketId(token);
                 String account_name = jwtUtil.extractAccountName(token);
                 AccountId accountId = new AccountId(account_name, id);
 
