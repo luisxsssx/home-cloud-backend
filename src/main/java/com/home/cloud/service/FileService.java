@@ -39,9 +39,8 @@ public class FileService {
             MultipartFile file,
             String folder_name) {
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        BucketId bucketId = (BucketId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer accountId = principal.getAccount_id();
-        Integer bucket_id = bucketId.getBucket_id();
+        Integer bucket_id = principal.getBucket_id();
         String bucket_name = "account" + accountId;
 
         try {

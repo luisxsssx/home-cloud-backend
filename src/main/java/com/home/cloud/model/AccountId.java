@@ -10,4 +10,5 @@ import lombok.NoArgsConstructor;
 public class AccountId {
     private String username;
     private Integer account_id;
+    private Integer bucket_id;
 }

@@ -1,13 +1,10 @@
 package com.home.cloud.service;
 
 import com.home.cloud.exception.account.InvalidPasswordException;
-import com.home.cloud.exception.account.InvalidUsernameException;
 import com.home.cloud.jwt.JwtFilter;
 import com.home.cloud.jwt.JwtUtil;
 import com.home.cloud.model.AccountModel;
 import com.home.cloud.model.LoginResponse;
-import io.jsonwebtoken.Claims;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
