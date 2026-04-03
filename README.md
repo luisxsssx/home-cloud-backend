@@ -18,9 +18,6 @@ A Spring Boot REST API for a personal cloud storage application with JWT authent
 - PostgreSQL
 - MinIO Server
 
-### Configuration
-
-Configure your `application.properties` or `application.yml` with database and MinIO credentials.
 
 ### Build & Run
 
@@ -91,10 +88,4 @@ Configure your `application.properties` or `application.yml` with database and M
 All endpoints except `/auth/login` and `/auth/register` require JWT authentication.
 
 Include the JWT token in the `Authorization` header:
-```
-Authorization: Bearer <your-jwt-token>
-```
 
-## CORS
-
-Configured to allow requests from: `http://localhost:4200`
