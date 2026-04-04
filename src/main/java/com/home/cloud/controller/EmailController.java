@@ -27,7 +27,7 @@ public class EmailController {
                                manage your data safely and easily.
                                
                                To get started, we recommend checking out your dashboard:
-                               👉 https://homecloud.com
+                               👉 http://localhost:4200/login
                                
                                If you have any questions, simply reply to this email. Our team is here to help!
                                

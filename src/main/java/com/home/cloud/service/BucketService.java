@@ -29,14 +29,8 @@ public class BucketService {
         this.minioClient = minioClient;
     }
 
-    public void createBucket() {
-        AccountId id = (AccountId) SecurityContextHolder.getContext()
-                .getAuthentication()
-                .getPrincipal();
-
-        Integer account_id = id.getAccount_id();
-
-        String bucket_name = "account" + account_id;
+    public void createBucket(Integer accountId) {
+        String bucket_name = "account" + accountId;
 
         if (!isBucketNameValid(bucket_name)) {
             throw new IllegalArgumentException("Invalid bucket name: " + bucket_name);
@@ -64,14 +58,22 @@ public class BucketService {
                 CallableStatement cs = connection.prepareCall("call sp_account_bucket(?,?)");
 
                 cs.setString(1, bucket_name);
-                cs.setInt(2, account_id);
+                cs.setInt(2, accountId);
                 cs.execute();
                 return null;
             });
 
         } catch (Exception e) {
-            throw new BucketCreationException("I cannot ensure the bucket for account " + account_id, e);
+            throw new BucketCreationException("I cannot ensure the bucket for account " + accountId, e);
         }
+    }
+
+    public void createBucket() {
+        AccountId id = (AccountId) SecurityContextHolder.getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        createBucket(id.getAccount_id());
     }
 
     private boolean isBucketNameValid(String bucketName) {

@@ -1,6 +1,7 @@
 package com.home.cloud.service;
 
 import com.home.cloud.exception.account.AccountException;
+import com.home.cloud.exception.BucketCreationException;
 import com.home.cloud.model.AccountId;
 import com.home.cloud.model.AccountModel;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,9 @@ public class AccountService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    @Autowired
+    private BucketService bucketService;
+
     public void createAccount(AccountModel accountModel) {
         String encodePassword = passwordEncoder.encode(accountModel.getPassword());
         jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
@@ -35,6 +39,26 @@ public class AccountService {
             cs.execute();
             return null;
         });
+
+        Integer accountId = getAccountIdByUsername(accountModel.getUsername());
+        if (accountId == null) {
+            throw new AccountException("Account created but could not retrieve account ID", null);
+        }
+
+        try {
+            bucketService.createBucket(accountId);
+        } catch (BucketCreationException e) {
+            throw new AccountException("Account created but bucket creation failed: " + e.getMessage(), e.getCause());
+        }
+    }
+
+    private Integer getAccountIdByUsername(String username) {
+        List<Integer> results = jdbcTemplate.queryForList(
+                "SELECT account_id FROM account WHERE username = ?",
+                Integer.class,
+                username
+        );
+        return results.isEmpty() ? null : results.get(0);
     }
 
    public List<AccountModel> getAccountInfo() {
