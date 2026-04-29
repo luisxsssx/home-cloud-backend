@@ -7,6 +7,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.sql.Timestamp;
 import java.util.Date;
 
 @Component
@@ -19,11 +20,12 @@ public class JwtUtil {
     private long expiration;
 
     // Generate token
-    public String generateToken(String account_name, Integer account_id, Integer bucket_id) {
+    public String generateToken(String account_name, Integer account_id, String created_at, Integer bucket_id) {
         return Jwts.builder()
                 .subject(account_name)
                 .claim("username", account_name)
                 .claim("account_id", account_id)
+                .claim("created_at", created_at)
                 .claim("bucket_id", bucket_id)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))

@@ -75,8 +75,7 @@ public class AccountService {
                         account.setEmail(rs.getString("out_email"));
                         account.setPassword(rs.getString("out_password"));
                         account.setCreated_at(rs.getTimestamp("out_created_at"));
-                        account.setCreated_at(rs.getTimestamp("out_updated_at"));
-                        account.setCreated_at(rs.getTimestamp("out_updated_at"));
+                        account.setUpdated_at(rs.getTimestamp("out_updated_at"));
                         return account;
                     }
             );

@@ -4,6 +4,7 @@ import com.home.cloud.exception.FileException;
 import com.home.cloud.exception.folder.FolderException;
 import com.home.cloud.model.AccountId;
 import com.home.cloud.model.FolderDataBaseModel;
+import com.home.cloud.model.type.FolderStatus;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
 import java.sql.CallableStatement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -47,10 +50,13 @@ public class FolderService {
         try {
             AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             Integer account_id = id.getAccount_id();
+            String status = FolderStatus.ACTIVE.toString();
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-                CallableStatement cs = connection.prepareCall("call sp_account_folder(?,?)");
+                CallableStatement cs = connection.prepareCall("call sp_account_folder(?,?,?,?)");
                 cs.setString(1, folder_name);
                 cs.setInt(2, account_id);
+                cs.setTimestamp(3, Timestamp.valueOf(LocalDateTime.now()));
+                cs.setString(4, status);
                 cs.execute();
                 return null;
             });

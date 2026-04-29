@@ -55,7 +55,7 @@ public class AuthService {
             throw new InvalidPasswordException("Invalid password provided");
         }
 
-        String token = jwtUtil.generateToken(account.getUsername(), account.getAccount_id(), account.getBucket_id());
+        String token = jwtUtil.generateToken(account.getUsername(), account.getAccount_id(), account.getCreated_at().toString(), account.getBucket_id());
 
         return new LoginResponse(account.getAccount_id(), account.getUsername(), token, account.getBucket_id());
     }

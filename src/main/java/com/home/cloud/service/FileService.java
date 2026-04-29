@@ -4,6 +4,7 @@ import com.home.cloud.exception.FileEliminationException;
 import com.home.cloud.exception.FileException;
 import com.home.cloud.jwt.JwtUtil;
 import com.home.cloud.model.*;
+import com.home.cloud.model.type.FileStatus;
 import io.minio.*;
 import io.minio.messages.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.sql.CallableStatement;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,13 +51,16 @@ public class FileService {
             String file_name = file.getOriginalFilename();
             String file_size = String.valueOf(file.getSize());
             Integer account_id = id.getAccount_id();
+            String status = FileStatus.ACTIVE.toString();
             jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-                CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?,?)");
+                CallableStatement cs = connection.prepareCall("call sp_account_file(?,?,?,?,?,?,?)");
                 cs.setString(1, folder_name);
                 cs.setString(2, file_name);
                 cs.setInt(3, account_id);
                 cs.setInt(4, bucket_id);
                 cs.setString(5, file_size);
+                cs.setTimestamp(6, Timestamp.valueOf(LocalDateTime.now()));
+                cs.setString(7, status);
                 cs.execute();
                 return null;
             });
@@ -191,13 +197,15 @@ public class FileService {
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer accountId = principal.getAccount_id();
         String bucket_name = "account" + accountId;
+        LocalDateTime updated_at = LocalDateTime.now();
         try {
             switch (fileRenameModel.getItemType()) {
                 case FILE -> {
                     jdbcTemplate.execute((ConnectionCallback<Void>) connection -> {
-                        CallableStatement cs = connection.prepareCall("call sp_update_file_name(?,?)");
+                        CallableStatement cs = connection.prepareCall("call sp_update_file_name(?,?,?)");
                         cs.setString(1, fileRenameModel.getNew_file_name());
                         cs.setString(2, fileRenameModel.getOld_file_name());
+                        cs.setTimestamp(3, Timestamp.valueOf(updated_at));
                         cs.execute();
                         return null;
                     } );
