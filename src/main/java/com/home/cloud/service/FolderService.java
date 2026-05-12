@@ -102,6 +102,28 @@ public class FolderService {
         }
     }
 
+    // Get root-level folders only (sidebar)
+    public List<FolderDataBaseModel> getRootFolders() {
+        try {
+            AccountId id = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            Integer account_id = id.getAccount_id();
+            return jdbcTemplate.query(
+                    "SELECT * FROM f_get_folder(?) f WHERE f.out_folder_name NOT LIKE '%/%'",
+                    new Object[]{ account_id },
+                    (rs, rowNum) -> {
+                        FolderDataBaseModel folder = new FolderDataBaseModel();
+                        folder.setFolder_id(rs.getInt("out_folder_id"));
+                        folder.setFolder_name(rs.getString("out_folder_name"));
+                        folder.setAccount_id(rs.getInt("out_account_id"));
+                        folder.setBucket_id(rs.getInt("out_bucket_id"));
+                        return folder;
+                    }
+            );
+        } catch (Exception e) {
+            throw new FolderException("Error getting data", e);
+        }
+    }
+
     // Get folder from database
     public List<FolderDataBaseModel> getFolder() {
         try {

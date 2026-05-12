@@ -36,4 +36,9 @@ public class FolderController {
     public List<FolderDataBaseModel> listFolders() {
         return folderService.getFolder();
     }
+
+    @PostMapping("/list-root-folders")
+    public List<FolderDataBaseModel> listRootFolders() {
+        return folderService.getRootFolders();
+    }
 }

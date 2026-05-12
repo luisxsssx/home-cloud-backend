@@ -189,7 +189,7 @@ public class FileService {
             );
            return new InputStreamResource(stream);
         } catch (Exception e) {
-            throw new FileException("Download successfully", e);
+            throw new FileException("Failed to download file", e);
         }
     }
 
@@ -243,7 +243,7 @@ public class FileService {
                             .build()
             );
         } catch (Exception e) {
-            throw new FileEliminationException("File removed successfully", e);
+            throw new FileEliminationException("Failed to rename file", e);
         }
     }
 
@@ -309,7 +309,7 @@ public class FileService {
                     RemoveObjectArgs.builder().bucket(bucket_name).object(file_name).build()
             );
         } catch (Exception e) {
-            throw new FileException("File deleted successfully", e);
+            throw new FileException("Failed to delete file", e);
         }
     }
 }
