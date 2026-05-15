@@ -1,0 +1,28 @@
+CREATE OR REPLACE FUNCTION f_update_account(
+	p_account_id INT,
+	p_username VARCHAR(255),
+	p_email VARCHAR(255)
+)
+RETURNS TABLE (
+	out_account_id INT,
+	out_username VARCHAR(255),
+	out_email VARCHAR(255),
+	out_updated_at TIMESTAMP
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+
+	UPDATE account
+	SET username = p_username,
+		email = p_email,
+		updated_at = CURRENT_TIMESTAMP
+	WHERE account_id = p_account_id;
+
+
+	RETURN QUERY
+	SELECT account_id, username, email, updated_at
+	FROM account
+	WHERE account_id = p_account_id;
+END;
+$$;
