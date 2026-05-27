@@ -20,13 +20,14 @@ public class JwtUtil {
     private long expiration;
 
     // Generate token
-    public String generateToken(String account_name, Integer account_id, String created_at, Integer bucket_id) {
+    public String generateToken(String account_name, Integer account_id, String created_at, Integer bucket_id, String email) {
         return Jwts.builder()
                 .subject(account_name)
                 .claim("username", account_name)
                 .claim("account_id", account_id)
                 .claim("created_at", created_at)
                 .claim("bucket_id", bucket_id)
+                .claim("email", email)
                 .issuedAt(new Date())
                 .expiration(new Date(System.currentTimeMillis() + expiration))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()), SignatureAlgorithm.HS256)

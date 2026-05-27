@@ -89,6 +89,27 @@ public class FileService {
         }
     }
 
+    public List<FileItemResponse> listAllFiles() {
+        AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        Integer accountId = principal.getAccount_id();
+        try {
+            return jdbcTemplate.query(
+                    "SELECT * FROM f_get_all_user_files(?)",
+                    new Object[]{accountId},
+                    (rs, rowNum) -> {
+                        FileItemResponse r = new FileItemResponse();
+                        r.setFileName(rs.getString("file_name"));
+                        r.setFolderName(rs.getString("folder_name"));
+                        r.setFileSize(rs.getLong("file_size"));
+                        r.setCreatedAt(rs.getTimestamp("created_at"));
+                        return r;
+                    }
+            );
+        } catch (Exception e) {
+            throw new FileException("Error listing all files", e);
+        }
+    }
+
     public List<String> listFolders() throws Exception {
         AccountId principal = (AccountId) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         Integer accountId = principal.getAccount_id();

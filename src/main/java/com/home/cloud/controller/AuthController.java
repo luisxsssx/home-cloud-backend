@@ -82,15 +82,4 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
         }
     }
-
-    @PostMapping("/forgot-password")
-    public void forgotPassword() {
-        return;
-    }
-
-    @PostMapping("/reset-password")
-    public void resetPassword() {
-        return;
-    }
-
 }

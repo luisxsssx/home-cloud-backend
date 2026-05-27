@@ -37,6 +37,11 @@ public class FileController {
         return fileService.listRoot(dataModel.getFolder_name());
     }
 
+    @GetMapping("/all")
+    public List<FileItemResponse> listAllFiles() {
+        return fileService.listAllFiles();
+    }
+
     @GetMapping("/list/dir")
     public ResponseEntity<List<String>> listFolders() {
         try {

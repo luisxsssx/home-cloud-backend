@@ -12,4 +12,5 @@ public class LoginResponse {
     private String username;
     private String token;
     private Integer bucket_id;
+    private String email;
 }
